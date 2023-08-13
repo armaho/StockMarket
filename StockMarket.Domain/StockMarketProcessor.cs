@@ -37,8 +37,8 @@ public class StockMarketProcessor : IStockMarketProcessor
     {
         _orders = new();
         _trades = new();
-        BuyQueue = new(new BuyOrderComparer());
-        SellQueue = new(new SellOrderComparer());
+        BuyQueue = new(new Lib.Comparer.BuyOrderComparer());
+        SellQueue = new(new Lib.Comparer.SellOrderComparer());
 
         _currentMarketState = (IsMarketOpen ? new MarketState.OpenState(this) : new MarketState.CloseState(this));
     }

@@ -6,4 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Comparer\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Comparer\" />
+  </ItemGroup>
 </Project>

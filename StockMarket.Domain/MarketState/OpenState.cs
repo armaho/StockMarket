@@ -13,8 +13,6 @@ public class OpenState : MarketState
     public override void CancelOrder(int cancelledOrderId)
     {
         stockMarketProcessor._orders.Find(order => (order.Id == cancelledOrderId))?.setAsCancelled();
-
-        System.Console.WriteLine(stockMarketProcessor._orders.Find(order => (order.Id == cancelledOrderId))?.IsCanceled);
     }
 
     public override int EnqueueOrder(TradeSide side, decimal price, decimal quantity)
