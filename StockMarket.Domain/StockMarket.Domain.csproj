@@ -9,4 +9,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Lib\Lib.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="MarketState\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MarketState\" />
+  </ItemGroup>
 </Project>

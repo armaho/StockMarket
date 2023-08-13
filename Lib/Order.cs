@@ -11,7 +11,6 @@ public class Order
     static private int nextInstanceId = 0; //Used to assign an unique Id to each instance
 
     public bool IsCanceled { get; private set; }
-    public bool IsModified { get; private set; }
     public int Id { get; init; }
     public decimal Price { get; private set; }
     public decimal Quantity { get; private set; }
@@ -21,7 +20,6 @@ public class Order
     {
         this.Id = nextInstanceId++;
         this.IsCanceled = false;
-        this.IsModified = false;
     }
 
     public Order(TradeSide side, decimal price, decimal quantity) : this()
@@ -39,11 +37,6 @@ public class Order
     public void setAsCancelled()
     {
         IsCanceled = true;
-    }
-
-    public void setAsModified()
-    {
-        IsModified = true;
     }
 }
 

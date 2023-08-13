@@ -3,57 +3,59 @@ using Lib;
 
 namespace StockMarket.Domain;
 
-public class StockMarketProcessor
+public class StockMarketProcessor : IStockMarketProcessor
 {
     public List<Order> Orders { get; init; }
     public List<Trade> Trades { get; init; }
-    public PriorityQueue<Order, decimal> BuyQueue { private get; init; }
-    public PriorityQueue<Order, decimal> SellQueue { private get; init; }
+    public PriorityQueue<Order, decimal> BuyQueue { internal get; init; }
+    public PriorityQueue<Order, decimal> SellQueue { internal get; init; }
 
-    public StockMarketProcessor()
+    //Methods that can be changes in different market states (open or closed) use
+    //the implementation in CurrentMarketState
+    private MarketState.MarketState CurrentMarketState;
+
+    //When creating a new market, it's open by default. To make a closed market,
+    //parameter IsMarketOpen should be false
+    public StockMarketProcessor(bool IsMarketOpen = true)
     {
         Orders = new();
         Trades = new();
         BuyQueue = new(new BuyOrderComparer());
         SellQueue = new(new SellOrderComparer());
+
+        CurrentMarketState = (IsMarketOpen ? new MarketState.OpenState(this) : new MarketState.CloseState(this));
+    }
+
+    public void CloseMarket()
+    {
+        CurrentMarketState = new MarketState.CloseState(this);
+    }
+
+    public void OpenMarket()
+    {
+        CurrentMarketState = new MarketState.OpenState(this);
     }
 
     public void CancelOrder(int cancelledOrderId)
     {
-        Orders.Find(order => (order.Id == cancelledOrderId))?.setAsCancelled();
+        CurrentMarketState.CancelOrder(cancelledOrderId);
     }
 
     //WARNING: New Order doesn't have the same ID as the old one.
-    public int ModifyOrder(int modifiedOrderId, decimal newPrice, decimal newQuantity)
+    public int ModifyOrder(int modifiedOrderId, decimal price, decimal quantity)
     {
-        Order? modifiedOrder = Orders.Find(order => (order.Id == modifiedOrderId));
-
-        ArgumentNullException.ThrowIfNull(modifiedOrder);
-
-        modifiedOrder.setAsModified();
-
-        return EnqueueOrder(modifiedOrder.Side, newPrice, newQuantity);
+        return CurrentMarketState.ModifyOrder(modifiedOrderId, price, quantity);
     }
 
-    public int EnqueueOrder(TradeSide tradeSide, decimal price, decimal quantity)
+    //Adds new order to the matched queue
+    public int EnqueueOrder(TradeSide side, decimal price, decimal quantity)
     {
-        Order newOrder = new(tradeSide, price, quantity);
-        PriorityQueue<Order, decimal> matchedOrderQueue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
-
-        Orders.Add(newOrder);
-        matchedOrderQueue.Enqueue(newOrder, newOrder.Price);
-
-        while (IsTransactionPossible())
-        {
-            MakeTransaction(possibilityAssurance: true);
-        }
-
-        return newOrder.Id;
+        return CurrentMarketState.EnqueueOrder(side, price, quantity);
     }
 
     //If the possibility of transaction is alrealdy assured, this function doesn't check that
     //by setting possibilityAssurance to true
-    private void MakeTransaction(bool possibilityAssurance = false)
+    internal void MakeTransaction(bool possibilityAssurance = false)
     {
         if (!possibilityAssurance && !IsTransactionPossible())
         {
@@ -80,17 +82,17 @@ public class StockMarketProcessor
 
     //Since some orders could be cancelled or modified, this function removes the peek element
     //of queue until there is an available order.
-    private void ClearQueue(TradeSide tradeSide)
+    internal void ClearQueue(TradeSide tradeSide)
     {
         PriorityQueue<Order, decimal> queue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
 
-        while ((queue.Count > 0) && (queue.Peek().IsCanceled || queue.Peek().IsModified))
+        while ((queue.Count > 0) && queue.Peek().IsCanceled)
         {
             queue.Dequeue();
         }
     }
 
-    private bool IsTransactionPossible()
+    internal bool IsTransactionPossible()
     {
         ClearQueue(TradeSide.Buy);
         ClearQueue(TradeSide.Sell);
@@ -100,7 +102,7 @@ public class StockMarketProcessor
 
     //Since some orders could be cancelled or modeified, so there is a need for a function that
     //returns the first peek that's not cancelled.
-    private Order AvailablePeek(TradeSide tradeSide)
+    internal Order AvailablePeek(TradeSide tradeSide)
     {
         PriorityQueue<Order, decimal> queue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
 
