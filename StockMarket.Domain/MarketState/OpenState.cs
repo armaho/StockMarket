@@ -27,7 +27,7 @@ public class OpenState : MarketState
 
         while (stockMarketProcessor.IsTransactionPossible())
         {
-            stockMarketProcessor.MakeTransaction(possibilityAssurance: true);
+            stockMarketProcessor.MakeTransaction();
         }
 
         return newOrder.Id;
