@@ -5,52 +5,69 @@ namespace StockMarket.Domain;
 
 public class StockMarketProcessor : IStockMarketProcessor
 {
-    public List<Order> Orders { get; init; }
-    public List<Trade> Trades { get; init; }
+    private MarketState.MarketState _currentMarketState; //Methods that can be changed in different market states (open or closed) use the implementation in CurrentMarketState
+
+    internal List<Order> _orders;
+    internal List<Trade> _trades;
+
     public PriorityQueue<Order, decimal> BuyQueue { internal get; init; }
     public PriorityQueue<Order, decimal> SellQueue { internal get; init; }
 
-    //Methods that can be changed in different market states (open or closed) use
-    //the implementation in CurrentMarketState
-    private MarketState.MarketState CurrentMarketState;
+    //Only for testing purposes
+    public IReadOnlyList<Order> Orders
+    {
+        get
+        {
+            return (IReadOnlyList<Order>)_orders;
+        }
+    }
+
+    //Only for testing purposes
+    public IReadOnlyList<Trade> Trades
+    {
+        get
+        {
+            return (IReadOnlyList<Trade>)_trades;
+        }
+    }
 
     //When creating a new market, it's close by default. To make an open market,
     //parameter IsMarketOpen should be true
     public StockMarketProcessor(bool IsMarketOpen = false)
     {
-        Orders = new();
-        Trades = new();
+        _orders = new();
+        _trades = new();
         BuyQueue = new(new BuyOrderComparer());
         SellQueue = new(new SellOrderComparer());
 
-        CurrentMarketState = (IsMarketOpen ? new MarketState.OpenState(this) : new MarketState.CloseState(this));
+        _currentMarketState = (IsMarketOpen ? new MarketState.OpenState(this) : new MarketState.CloseState(this));
     }
 
     public void CloseMarket()
     {
-        CurrentMarketState = new MarketState.CloseState(this);
+        _currentMarketState = new MarketState.CloseState(this);
     }
 
     public void OpenMarket()
     {
-        CurrentMarketState = new MarketState.OpenState(this);
+        _currentMarketState = new MarketState.OpenState(this);
     }
 
     public void CancelOrder(int cancelledOrderId)
     {
-        CurrentMarketState.CancelOrder(cancelledOrderId);
+        _currentMarketState.CancelOrder(cancelledOrderId);
     }
 
-    //WARNING: New Order doesn't have the same ID as the old one.
+    //WARNING: Modified Order doesn't have the same ID as the old one.
     public int ModifyOrder(int modifiedOrderId, decimal price, decimal quantity)
     {
-        return CurrentMarketState.ModifyOrder(modifiedOrderId, price, quantity);
+        return _currentMarketState.ModifyOrder(modifiedOrderId, price, quantity);
     }
 
     //Adds new order to the matched queue
     public int EnqueueOrder(TradeSide side, decimal price, decimal quantity)
     {
-        return CurrentMarketState.EnqueueOrder(side, price, quantity);
+        return _currentMarketState.EnqueueOrder(side, price, quantity);
     }
 
     internal void MakeTransaction()
@@ -61,7 +78,7 @@ public class StockMarketProcessor : IStockMarketProcessor
         bestBuyOrder.reduceQuantity(transactedQuantity);
         bestSellOrder.reduceQuantity(transactedQuantity);
 
-        Trades.Add(new(bestBuyOrder.Id, bestSellOrder.Id, bestSellOrder.Price, transactedQuantity));
+        _trades.Add(new(bestBuyOrder.Id, bestSellOrder.Id, bestSellOrder.Price, transactedQuantity));
     }
 
     internal bool IsTransactionPossible()
@@ -85,7 +102,7 @@ public class StockMarketProcessor : IStockMarketProcessor
     {
         PriorityQueue<Order, decimal> queue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
 
-        while ((queue.Count > 0) && queue.Peek().IsCanceled && (queue.Peek().Quantity == 0))
+        while ((queue.Count > 0) && (queue.Peek().IsCanceled || (queue.Peek().Quantity == 0)))
         {
             queue.Dequeue();
         }

@@ -12,9 +12,9 @@ public class OpenState : MarketState
 
     public override void CancelOrder(int cancelledOrderId)
     {
-        stockMarketProcessor.Orders.Find(order => (order.Id == cancelledOrderId))?.setAsCancelled();
+        stockMarketProcessor._orders.Find(order => (order.Id == cancelledOrderId))?.setAsCancelled();
 
-        System.Console.WriteLine(stockMarketProcessor.Orders.Find(order => (order.Id == cancelledOrderId))?.IsCanceled);
+        System.Console.WriteLine(stockMarketProcessor._orders.Find(order => (order.Id == cancelledOrderId))?.IsCanceled);
     }
 
     public override int EnqueueOrder(TradeSide side, decimal price, decimal quantity)
@@ -22,7 +22,7 @@ public class OpenState : MarketState
         Order newOrder = new(side, price, quantity);
         PriorityQueue<Order, decimal> matchedOrderQueue = ((side == TradeSide.Buy) ? stockMarketProcessor.BuyQueue : stockMarketProcessor.SellQueue);
 
-        stockMarketProcessor.Orders.Add(newOrder);
+        stockMarketProcessor._orders.Add(newOrder);
         matchedOrderQueue.Enqueue(newOrder, newOrder.Price);
 
         while (stockMarketProcessor.IsTransactionPossible())
@@ -35,7 +35,7 @@ public class OpenState : MarketState
 
     public override int ModifyOrder(int modifiedOrderId, decimal price, decimal quantity)
     {
-        Order? modifiedOrder = stockMarketProcessor.Orders.Find(order => (order.Id == modifiedOrderId));
+        Order? modifiedOrder = stockMarketProcessor._orders.Find(order => (order.Id == modifiedOrderId));
 
         ArgumentNullException.ThrowIfNull(modifiedOrder);
 

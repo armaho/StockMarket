@@ -14,7 +14,7 @@ namespace StockMarket.Domain.Test
         public StockMarketProcessorTest()
         {
             sut = new StockMarketProcessor();
-            //sut.OpenMarket();
+            sut.OpenMarket();
         }
 
         [Fact]

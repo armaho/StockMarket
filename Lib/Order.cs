@@ -8,7 +8,7 @@ public enum TradeSide
 
 public class Order
 {
-    static private int nextInstanceId = 0; //Used to assign an unique Id to each instance
+    static private int nextInstanceId = 0; //Used to assign a unique Id to each instance
 
     public bool IsCanceled { get; private set; }
     public int Id { get; init; }
