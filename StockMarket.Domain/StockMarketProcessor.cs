@@ -10,8 +10,8 @@ public class StockMarketProcessor : IStockMarketProcessor
     internal List<Order> _orders;
     internal List<Trade> _trades;
 
-    public PriorityQueue<Order, decimal> BuyQueue { internal get; init; }
-    public PriorityQueue<Order, decimal> SellQueue { internal get; init; }
+    public PriorityQueue<Order, (decimal price, int id)> BuyQueue { internal get; init; }
+    public PriorityQueue<Order, (decimal price, int id)> SellQueue { internal get; init; }
 
     //Only for testing purposes
     public IReadOnlyList<Order> Orders
@@ -37,8 +37,9 @@ public class StockMarketProcessor : IStockMarketProcessor
     {
         _orders = new();
         _trades = new();
-        BuyQueue = new(new Lib.Comparer.BuyOrderComparer());
-        SellQueue = new(new Lib.Comparer.SellOrderComparer());
+
+        BuyQueue = new(new Lib.Comparer.OrderComparer(new Lib.Comparer.BuyOrderPriceComparer()));
+        SellQueue = new(new Lib.Comparer.OrderComparer(new Lib.Comparer.SellOrderPriceComparer()));
 
         _currentMarketState = (IsMarketOpen ? new MarketState.OpenState(this) : new MarketState.CloseState(this));
     }
@@ -89,7 +90,7 @@ public class StockMarketProcessor : IStockMarketProcessor
     //Returns Peek Item after calling ClearQueue() 
     private Order? AvailablePeek(TradeSide tradeSide)
     {
-        PriorityQueue<Order, decimal> queue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
+        PriorityQueue<Order, (decimal price, int id)> queue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
 
         ClearQueue(tradeSide);
 
@@ -100,7 +101,7 @@ public class StockMarketProcessor : IStockMarketProcessor
     //this function removes the peek element of queue until there is an available order.
     private void ClearQueue(TradeSide tradeSide)
     {
-        PriorityQueue<Order, decimal> queue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
+        PriorityQueue<Order, (decimal price, int id)> queue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
 
         while ((queue.Count > 0) && (queue.Peek().IsCanceled || (queue.Peek().Quantity == 0)))
         {
