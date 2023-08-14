@@ -5,10 +5,7 @@ namespace StockMarket.Domain.MarketState;
 
 public class OpenState : MarketState
 {
-    public OpenState(StockMarketProcessor stockMarketProcessor)
-    {
-        this.stockMarketProcessor = stockMarketProcessor;
-    }
+    public OpenState(StockMarketProcessor stockMarketProcessor) : base(stockMarketProcessor) { }
 
     public override void CancelOrder(int cancelledOrderId)
     {
@@ -18,10 +15,10 @@ public class OpenState : MarketState
     public override int EnqueueOrder(TradeSide side, decimal price, decimal quantity)
     {
         Order newOrder = new(side, price, quantity);
-        PriorityQueue<Order, decimal> matchedOrderQueue = ((side == TradeSide.Buy) ? stockMarketProcessor.BuyQueue : stockMarketProcessor.SellQueue);
+        PriorityQueue<Order, (decimal price, int id)> matchedOrderQueue = ((side == TradeSide.Buy) ? stockMarketProcessor.BuyQueue : stockMarketProcessor.SellQueue);
 
         stockMarketProcessor._orders.Add(newOrder);
-        matchedOrderQueue.Enqueue(newOrder, newOrder.Price);
+        matchedOrderQueue.Enqueue(newOrder, (newOrder.Price, newOrder.Id));
 
         while (stockMarketProcessor.IsTransactionPossible())
         {

@@ -5,10 +5,7 @@ namespace StockMarket.Domain.MarketState;
 
 public class CloseState : MarketState
 {
-    public CloseState(StockMarketProcessor stockMarketProcessor)
-    {
-        this.stockMarketProcessor = stockMarketProcessor;
-    }
+    public CloseState(StockMarketProcessor stockMarketProcessor) : base(stockMarketProcessor) { }
 
     public override void CancelOrder(int cancelledOrderId)
     {
