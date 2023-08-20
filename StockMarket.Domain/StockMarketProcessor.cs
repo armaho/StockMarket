@@ -87,19 +87,8 @@ public class StockMarketProcessor : IStockMarketProcessor
         return ((AvailablePeek(TradeSide.Buy)?.Price ?? 0) >= (AvailablePeek(TradeSide.Sell)?.Price ?? decimal.MaxValue));
     }
 
-    //Returns Peek Item after calling ClearQueue() 
+    //Returns first available order in order queue
     private Order? AvailablePeek(TradeSide tradeSide)
-    {
-        PriorityQueue<Order, (decimal price, int id)> queue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
-
-        ClearQueue(tradeSide);
-
-        return ((queue.Count == 0) ? null : queue.Peek());
-    }
-
-    //Since some orders could be cancelled or modified, or their quantity is simply 0,
-    //this function removes the peek element of queue until there is an available order.
-    private void ClearQueue(TradeSide tradeSide)
     {
         PriorityQueue<Order, (decimal price, int id)> queue = ((tradeSide == TradeSide.Buy) ? BuyQueue : SellQueue);
 
@@ -107,5 +96,7 @@ public class StockMarketProcessor : IStockMarketProcessor
         {
             queue.Dequeue();
         }
+
+        return ((queue.Count == 0) ? null : queue.Peek());
     }
 }
