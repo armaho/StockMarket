@@ -6,10 +6,9 @@ namespace StockMarket.Domain;
 
 public class StockMarketProcessor : IStockMarketProcessor
 {
+    private List<Order> _orders;
+    private List<Trade> _trades;
     private MarketState.MarketState _currentMarketState; //Methods that can be changed in different market states (open or closed) use the implementation in CurrentMarketState
-
-    internal List<Order> _orders;
-    internal List<Trade> _trades;
 
     public PriorityQueue<Order, (decimal price, int id)> BuyQueue { internal get; init; }
     public PriorityQueue<Order, (decimal price, int id)> SellQueue { internal get; init; }
