@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
 using Lib;
 
 namespace StockMarket.Domain;
@@ -71,7 +72,42 @@ public class StockMarketProcessor : IStockMarketProcessor
         return _currentMarketState.EnqueueOrder(side, price, quantity);
     }
 
-    internal void MakeTransaction()
+    //Function below should only be called by classes that inherit from MarketState.
+    internal int EnqueueOrderByMarketState(TradeSide side, decimal price, decimal quantity)
+    {
+        Order newOrder = new(side, price, quantity);
+        PriorityQueue<Order, (decimal price, int id)> matchedOrderQueue = ((side == TradeSide.Buy) ? BuyQueue : SellQueue);
+
+        _orders.Add(newOrder);
+        matchedOrderQueue.Enqueue(newOrder, (newOrder.Price, newOrder.Id));
+
+        while (IsTransactionPossible())
+        {
+            MakeTransaction();
+        }
+
+        return newOrder.Id;
+    }
+
+    //Function below should only be called by classes that inherit from MarketState.
+    internal void CancelOrderByMarketState(int cancelledOrderId)
+    {
+        _orders.Find(order => (order.Id == cancelledOrderId))?.setAsCancelled();
+    }
+
+    //Function below should only be called by classes that inherit from MarketState.
+    internal int ModifyOrderByMarketState(int modifiedOrderId, decimal price, decimal quantity)
+    {
+        Order? modifiedOrder = _orders.Find(order => (order.Id == modifiedOrderId));
+
+        ArgumentNullException.ThrowIfNull(modifiedOrder);
+
+        modifiedOrder.setAsCancelled();
+
+        return EnqueueOrder(modifiedOrder.Side, price, quantity);
+    }
+
+    private void MakeTransaction()
     {
         Order? bestBuyOrder = AvailablePeek(TradeSide.Buy), bestSellOrder = AvailablePeek(TradeSide.Sell);
         decimal transactedQuantity = Math.Min(bestBuyOrder.Quantity, bestSellOrder.Quantity);
@@ -82,7 +118,7 @@ public class StockMarketProcessor : IStockMarketProcessor
         _trades.Add(new(bestBuyOrder.Id, bestSellOrder.Id, bestSellOrder.Price, transactedQuantity));
     }
 
-    internal bool IsTransactionPossible()
+    private bool IsTransactionPossible()
     {
         return ((AvailablePeek(TradeSide.Buy)?.Price ?? 0) >= (AvailablePeek(TradeSide.Sell)?.Price ?? decimal.MaxValue));
     }

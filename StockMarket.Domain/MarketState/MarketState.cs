@@ -12,9 +12,20 @@ namespace StockMarket.Domain.MarketState
             this.stockMarketProcessor = stockMarketProcessor;
         }
 
-        public abstract int EnqueueOrder(TradeSide side, decimal price, decimal quantity);
-        public abstract int ModifyOrder(int modifiedOrderId, decimal price, decimal quantity);
-        public abstract void CancelOrder(int cancelledOrderId);
+        public virtual int EnqueueOrder(TradeSide side, decimal price, decimal quantity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual int ModifyOrder(int modifiedOrderId, decimal price, decimal quantity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void CancelOrder(int cancelledOrderId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 
