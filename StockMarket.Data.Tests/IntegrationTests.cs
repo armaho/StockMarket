@@ -116,7 +116,7 @@ public class IntegrationTests : IClassFixture<StockMarketDbContextFixture>
             orders: context2.Orders.Where(order => ((order.Quantity > 0) && (!order.IsCanceled))).ToList()
         );
 
-        var sellOrderId = processor2.EnqueueOrder(side: TradeSide.Sell, price: 1500M, quantity: 0);
+        var sellOrderId = processor2.EnqueueOrder(side: TradeSide.Sell, price: 1500M, quantity: 1M);
         var sellOrder = processor2.Orders.First(order => (order.Id == sellOrderId));
 
         var trade = processor2.Trades[0];
