@@ -10,7 +10,7 @@ public class StockMarketDbContextFixture : IDisposable
     {
         var optionsBuilder = new DbContextOptionsBuilder<StockMarketDbContext>();
 
-        optionsBuilder.UseNpgsql(@"Host=localhost;Username=postgres;Password=arman1383;Database=StockMarket");
+        optionsBuilder.UseNpgsql(@"Host=localhost;Username=postgres;Password=arman1383;Database=StockMarketTest");
 
         Context = new(optionsBuilder.Options);
 
