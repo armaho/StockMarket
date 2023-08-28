@@ -51,6 +51,7 @@ public class IntegrationTests
         });
     }
 
+    [Fact]
     public void DbContext_Should_Save_Trades_In_Database_Test()
     {
         //Arrange
