@@ -113,7 +113,7 @@ public class IntegrationTests : IClassFixture<StockMarketDbContextFixture>
         var context2 = new StockMarketDbContext(optionsBuilder.Options);
         var processor2 = new StockMarketProcessor(
             IsMarketOpen: true,
-            orders: context2.Orders.Where(order => ((order.Quantity > 0) && (!order.IsCanceled)))
+            orders: context2.Orders.Where(order => ((order.Quantity > 0) && (!order.IsCanceled))).ToList()
         );
 
         var sellOrderId = processor2.EnqueueOrder(side: TradeSide.Sell, price: 1500M, quantity: 0);
