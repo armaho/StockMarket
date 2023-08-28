@@ -62,6 +62,7 @@ public class IntegrationTests
         var processor = new StockMarketProcessor(IsMarketOpen: true);
 
         Order.NextInstanceId = ((context.Orders.Max(order => (int?)order.Id)) ?? -1) + 1;
+        Trade.NextInstanceId = ((context.Trades.Max(trade => (int?)trade.Id)) ?? -1) + 1;
 
         var buyOrderId = processor.EnqueueOrder(side: TradeSide.Buy, price: 1500M, quantity: 1M);
         var sellOrderId = processor.EnqueueOrder(side: TradeSide.Sell, price: 1500M, quantity: 1M);
