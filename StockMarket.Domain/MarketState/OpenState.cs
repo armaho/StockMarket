@@ -12,9 +12,9 @@ public class OpenState : MarketState
         stockMarketProcessor.CancelOrderByMarketState(cancelledOrderId);
     }
 
-    public override int EnqueueOrder(TradeSide side, decimal price, decimal quantity)
+    public override int EnqueueOrder(Order order)
     {
-        return stockMarketProcessor.EnqueueOrderByMarketState(side, price, quantity);
+        return stockMarketProcessor.EnqueueOrderByMarketState(order);
     }
 
     public override int ModifyOrder(int modifiedOrderId, decimal price, decimal quantity)

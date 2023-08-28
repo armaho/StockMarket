@@ -33,7 +33,7 @@ public class StockMarketProcessor : IStockMarketProcessor
 
     //When creating a new market, it's close by default. To make an open market,
     //parameter IsMarketOpen should be true
-    public StockMarketProcessor(bool IsMarketOpen = false)
+    public StockMarketProcessor(bool IsMarketOpen = false, List<Order>? orders = null)
     {
         _orders = new();
         _trades = new();
@@ -42,6 +42,11 @@ public class StockMarketProcessor : IStockMarketProcessor
         SellQueue = new(new Lib.Comparer.OrderComparer(new Lib.Comparer.SellOrderPriceComparer()));
 
         _currentMarketState = (IsMarketOpen ? new MarketState.OpenState(this) : new MarketState.CloseState(this));
+
+        foreach (var order in (orders ?? new()))
+        {
+            EnqueueOrderByMarketState(order);
+        }
     }
 
     public void CloseMarket()
@@ -68,14 +73,18 @@ public class StockMarketProcessor : IStockMarketProcessor
     //Adds new order to the matched queue
     public int EnqueueOrder(TradeSide side, decimal price, decimal quantity)
     {
-        return _currentMarketState.EnqueueOrder(side, price, quantity);
+        return EnqueueOrder(new Order(side, price, quantity));
+    }
+
+    public int EnqueueOrder(Order order)
+    {
+        return _currentMarketState.EnqueueOrder(order);
     }
 
     //Function below should only be called by classes that inherit from MarketState.
-    internal int EnqueueOrderByMarketState(TradeSide side, decimal price, decimal quantity)
+    internal int EnqueueOrderByMarketState(Order newOrder)
     {
-        Order newOrder = new(side, price, quantity);
-        PriorityQueue<Order, (decimal price, int id)> matchedOrderQueue = ((side == TradeSide.Buy) ? BuyQueue : SellQueue);
+        PriorityQueue<Order, (decimal price, int id)> matchedOrderQueue = ((newOrder.Side == TradeSide.Buy) ? BuyQueue : SellQueue);
 
         _orders.Add(newOrder);
         matchedOrderQueue.Enqueue(newOrder, (newOrder.Price, newOrder.Id));

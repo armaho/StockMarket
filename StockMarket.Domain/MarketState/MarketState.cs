@@ -3,8 +3,8 @@ using Lib;
 
 namespace StockMarket.Domain.MarketState
 {
-	public abstract class MarketState : IStockMarketProcessor
-	{
+    public abstract class MarketState : IStockMarketProcessor
+    {
         protected StockMarketProcessor stockMarketProcessor;
 
         protected MarketState(StockMarketProcessor stockMarketProcessor)
@@ -12,7 +12,7 @@ namespace StockMarket.Domain.MarketState
             this.stockMarketProcessor = stockMarketProcessor;
         }
 
-        public virtual int EnqueueOrder(TradeSide side, decimal price, decimal quantity)
+        public virtual int EnqueueOrder(Order order)
         {
             throw new NotImplementedException();
         }
