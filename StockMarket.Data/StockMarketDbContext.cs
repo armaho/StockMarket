@@ -25,6 +25,9 @@ public class StockMarketDbContext : DbContext
                 builder.Property(trade => trade.SellOrderId);
                 builder.Property(trade => trade.Price);
                 builder.Property(trade => trade.Quantity);
+
+                builder.HasOne<Order>().WithMany().IsRequired().HasForeignKey(trade => trade.SellOrderId);
+                builder.HasOne<Order>().WithMany().IsRequired().HasForeignKey(trade => trade.BuyOrderId);
             }
         );
     }
