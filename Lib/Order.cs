@@ -2,7 +2,7 @@
 
 public class Order
 {
-    static private int nextInstanceId = 0; //Used to assign a unique Id to each instance
+    static public int NextInstanceId { private get; set; } = 0; //Used to assign a unique Id to each instance
 
     public bool IsCanceled { get; private set; }
     public int Id { get; init; }
@@ -12,7 +12,7 @@ public class Order
 
     public Order()
     {
-        this.Id = nextInstanceId++;
+        this.Id = NextInstanceId++;
         this.IsCanceled = false;
     }
 
