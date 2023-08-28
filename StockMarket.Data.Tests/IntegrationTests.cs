@@ -5,17 +5,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace StockMarket.Data.Tests;
 
-public class IntegrationTests
+public class IntegrationTests : IClassFixture<StockMarketDbContextFixture>
 {
+    private readonly StockMarketDbContext context;
+
+    public IntegrationTests(StockMarketDbContextFixture fixture)
+    {
+        context = fixture.Context;
+    }
+
     [Fact]
     public void DbContext_Should_Save_Orders_In_Database_Test()
     {
         //Arrange
-        var optionsBuilder = new DbContextOptionsBuilder<StockMarketDbContext>();
-
-        optionsBuilder.UseNpgsql(@"Host=localhost;Username=postgres;Password=arman1383;Database=StockMarket");
-
-        using var context = new StockMarketDbContext(optionsBuilder.Options);
         var processor = new StockMarketProcessor(IsMarketOpen: true);
 
         Order.NextInstanceId = ((context.Orders.Max(order => (int?)order.Id)) ?? 0) + 1;
@@ -55,11 +57,6 @@ public class IntegrationTests
     public void DbContext_Should_Save_Trades_In_Database_Test()
     {
         //Arrange
-        var optionsBuilder = new DbContextOptionsBuilder<StockMarketDbContext>();
-
-        optionsBuilder.UseNpgsql(@"Host=localhost;Username=postgres;Password=arman1383;Database=StockMarket");
-
-        using var context = new StockMarketDbContext(optionsBuilder.Options);
         var processor = new StockMarketProcessor(IsMarketOpen: true);
 
         Order.NextInstanceId = ((context.Orders.Max(order => (int?)order.Id)) ?? -1) + 1;
