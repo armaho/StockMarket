@@ -13,6 +13,9 @@ public class StockMarketDbContextFixture : IDisposable
         optionsBuilder.UseNpgsql(@"Host=localhost;Username=postgres;Password=arman1383;Database=StockMarket");
 
         Context = new(optionsBuilder.Options);
+
+        Context.Database.EnsureDeleted();
+        Context.Database.EnsureCreated();
     }
 
     public void Dispose()
