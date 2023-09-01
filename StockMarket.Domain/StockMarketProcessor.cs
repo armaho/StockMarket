@@ -117,7 +117,7 @@ public class StockMarketProcessor : IStockMarketProcessor
 
     private void MakeTransaction()
     {
-        Order? bestBuyOrder = AvailablePeek(TradeSide.Buy), bestSellOrder = AvailablePeek(TradeSide.Sell);
+        Order bestBuyOrder = AvailablePeek(TradeSide.Buy)!, bestSellOrder = AvailablePeek(TradeSide.Sell)!;
         decimal transactedQuantity = Math.Min(bestBuyOrder.Quantity, bestSellOrder.Quantity);
 
         bestBuyOrder.reduceQuantity(transactedQuantity);
@@ -128,7 +128,14 @@ public class StockMarketProcessor : IStockMarketProcessor
 
     private bool IsTransactionPossible()
     {
-        return ((AvailablePeek(TradeSide.Buy)?.Price ?? 0) >= (AvailablePeek(TradeSide.Sell)?.Price ?? decimal.MaxValue));
+        Order? buyOrderPeek = AvailablePeek(TradeSide.Buy), sellOrderPeek = AvailablePeek(TradeSide.Sell);
+
+        if ((buyOrderPeek == null) || (sellOrderPeek == null))
+        {
+            return false;
+        }
+
+        return (buyOrderPeek.Price >= sellOrderPeek.Price);
     }
 
     //Returns first available order in order queue
